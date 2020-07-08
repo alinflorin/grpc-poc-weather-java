@@ -8,4 +8,4 @@ FROM openjdk:14-slim
 WORKDIR /app
 COPY --from=builder /app/target .
 EXPOSE 9090
-CMD ["java", "-jar", "/app/target/grpc-poc-weather-java-1.0-SNAPSHOT-shaded.jar"]
+CMD ["java", "-jar", "/app/target/grpc-poc-weather-java-1.0-SNAPSHOT.jar"]
