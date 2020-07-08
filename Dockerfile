@@ -5,7 +5,6 @@ RUN mvn clean install
 RUN mvn package
 
 FROM openjdk:14-slim
-WORKDIR /app
-COPY --from=builder /app/target .
+COPY --from=builder /app/target/grpc-poc-weather-java-1.0-SNAPSHOT.jar /grpc-poc-weather-java-1.0-SNAPSHOT.jar
 EXPOSE 9090
-CMD ["java", "-jar", "/app/target/grpc-poc-weather-java-1.0-SNAPSHOT.jar"]
+CMD ["java", "-jar", "/grpc-poc-weather-java-1.0-SNAPSHOT.jar"]
