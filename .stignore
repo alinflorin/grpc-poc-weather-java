@@ -16,3 +16,6 @@ README.md
 team-extension.log
 Dockerfile
 **/*.nuget.cache
+.classpath
+.settings
+.project
