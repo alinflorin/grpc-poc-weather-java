@@ -1,0 +1,8 @@
+name: grpc-poc-weather-java
+image: okteto/maven:latest
+command: [ "mvn", "spring-boot:run"]
+workdir: /src
+remote: 50004
+persistentVolume:
+  enabled: true
+  size: 512Mi

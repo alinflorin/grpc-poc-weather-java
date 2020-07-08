@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout current repo
+      uses: actions/checkout@v2.3.1
+      
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v1.1.0
+      with:
+        username: ${{secrets.dockerUsername}}
+        password: ${{secrets.dockerPassword}}
+        repository: ${{github.repository}}
+        tags: 'latest,${{github.sha}}'
+        tag_with_ref: true
+        push: true
+        
+    - name: Kubernetes set kube context
+      uses: Azure/k8s-set-context@v1
+      with:
+        method: kubeconfig
+        kubeconfig: ${{secrets.kubeConfig}}
+    
+    - name: Deploy to kube cluster
+      uses: Azure/k8s-deploy@v1
+      with:
+        namespace: alinflorin
+        images: |
+          ${{github.repository}}:${{github.sha}}
+        manifests: |
+          kubernetes.yaml
+        force: true
