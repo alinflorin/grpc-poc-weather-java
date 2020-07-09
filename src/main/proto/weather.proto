@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.alinflorin.grpc_poc_weather_java.grpc";
+option java_outer_classname = "WeatherProto";
+option objc_class_prefix = "WEA";
+
+package weather;
+
+service Weather {
+	rpc GetWeather(GetWeatherRequest) returns (GetWeatherReply);
+}
+
+message GetWeatherRequest {
+    string address = 1;
+    bool useMetric = 2;
+}
+
+message GetWeatherReply {
+    float currentTemp = 1;
+    float currentWindSpeed = 2;
+    string summary = 3;
+}
