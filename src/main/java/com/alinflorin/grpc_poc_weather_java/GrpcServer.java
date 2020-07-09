@@ -4,11 +4,21 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
 
-import com.alinflorin.grpc_poc_weather_java.grpc.*;
+import weather.*;
+import weather.WeatherOuterClass.GetWeatherReply;
+import weather.WeatherOuterClass.GetWeatherRequest;
+import darksky.Darksky.GetTempReply;
+import darksky.Darksky.GetWindRequest;
+import darksky.Darksky.GetWindReply;
+import darksky.Darksky.GetTempRequest;
+import darksky.*;
+import darksky.DarkSkyGrpc.DarkSkyBlockingStub;
 
 public class GrpcServer {
   private static final Logger logger = Logger.getLogger(GrpcServer.class.getName());
@@ -16,9 +26,7 @@ public class GrpcServer {
 
   public void start() throws IOException {
     int port = 9090;
-    server = ServerBuilder.forPort(port)
-        .addService(new WeatherService())
-        .build().start();
+    server = ServerBuilder.forPort(port).addService(new WeatherService()).build().start();
     logger.info("Server started, listening on " + port);
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
@@ -49,9 +57,29 @@ public class GrpcServer {
   static class WeatherService extends WeatherGrpc.WeatherImplBase {
     @Override
     public void getWeather(GetWeatherRequest request, StreamObserver<GetWeatherReply> responseObserver) {
-      GetWeatherReply reply = GetWeatherReply.newBuilder().setCurrentTemp(1).setCurrentWindSpeed(2).build();
-      responseObserver.onNext(reply);
-      responseObserver.onCompleted();
+      GetWindRequest wReq = GetWindRequest.newBuilder().setAddress(request.getAddress())
+          .setUseMetric(request.getUseMetric()).build();
+      GetTempRequest tReq = GetTempRequest.newBuilder().setAddress(request.getAddress())
+          .setUseMetric(request.getUseMetric()).build();
+      ManagedChannel channel = ManagedChannelBuilder.forTarget("grpc-poc-darksky-mock-node:3000")
+          // Channels are secure by default (via SSL/TLS). For the example we disable TLS
+          // to avoid
+          // needing certificates.
+          .usePlaintext().build();
+      try {
+        DarkSkyBlockingStub stub = DarkSkyGrpc.newBlockingStub(channel);
+        var wReply = stub.getWind(wReq);
+        var tReply = stub.getTemp(tReq);
+        GetWeatherReply reply = GetWeatherReply.newBuilder().setCurrentTemp(tReply.getCurrentTemp()).setCurrentWindSpeed(wReply.getCurrentWind()).build();
+        responseObserver.onNext(reply);
+        responseObserver.onCompleted();
+      } finally {
+        try {
+          channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+          // ignored
+        }
+      }
     }
   }
 }

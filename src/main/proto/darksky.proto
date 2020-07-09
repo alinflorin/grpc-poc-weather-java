@@ -1,0 +1,25 @@
+syntax = "proto3";
+package darksky;
+
+service DarkSky {
+    rpc GetTemp(GetTempRequest) returns (GetTempReply);
+    rpc GetWind(GetWindRequest) returns (GetWindReply);
+}
+
+message GetTempRequest {
+    string address = 1;
+    bool useMetric = 2;
+}
+
+message GetTempReply {
+    float currentTemp = 1;
+}
+
+message GetWindRequest {
+    string address = 1;
+    bool useMetric = 2;
+}
+
+message GetWindReply {
+    float currentWind = 1;
+}
