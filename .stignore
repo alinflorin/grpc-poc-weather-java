@@ -19,3 +19,4 @@ Dockerfile
 .classpath
 .settings
 .project
+.settings/
