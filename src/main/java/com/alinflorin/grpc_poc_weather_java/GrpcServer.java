@@ -60,26 +60,17 @@ public class GrpcServer {
           .setUseMetric(request.getUseMetric()).build();
       GetTempRequest tReq = GetTempRequest.newBuilder().setAddress(request.getAddress())
           .setUseMetric(request.getUseMetric()).build();
-      ManagedChannel channel = ManagedChannelBuilder.forAddress("grpc-poc-darksky-mock-node", 3000)
-          .usePlaintext()
+      ManagedChannel channel = ManagedChannelBuilder.forAddress("grpc-poc-darksky-mock-node", 3000).usePlaintext()
           .build();
-      try {
-        DarkSkyBlockingStub stub = DarkSkyGrpc.newBlockingStub(channel);
-        var wReply = stub.getWind(wReq);
-        var tReply = stub.getTemp(tReq);
-        GetWeatherReply reply = GetWeatherReply.newBuilder()
-          .setCurrentTemp(tReply.getCurrentTemp())
-          .setCurrentWindSpeed(wReply.getCurrentWind())
-          .build();
-        responseObserver.onNext(reply);
-        responseObserver.onCompleted();
-      } finally {
-        try {
-          channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
-        } catch (Exception e) {
-          logger.log(Level.WARNING, e.getMessage());
-        }
-      }
+
+      DarkSkyBlockingStub stub = DarkSkyGrpc.newBlockingStub(channel);
+      var wReply = stub.getWind(wReq);
+      var tReply = stub.getTemp(tReq);
+      GetWeatherReply reply = GetWeatherReply.newBuilder().setCurrentTemp(tReply.getCurrentTemp())
+          .setCurrentWindSpeed(wReply.getCurrentWind()).build();
+      responseObserver.onNext(reply);
+      responseObserver.onCompleted();
+      channel.shutdown();
     }
   }
 }
