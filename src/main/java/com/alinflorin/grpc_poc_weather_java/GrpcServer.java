@@ -2,7 +2,6 @@ package com.alinflorin.grpc_poc_weather_java;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import io.grpc.ManagedChannel;
@@ -66,8 +65,26 @@ public class GrpcServer {
       DarkSkyBlockingStub stub = DarkSkyGrpc.newBlockingStub(channel);
       var wReply = stub.getWind(wReq);
       var tReply = stub.getTemp(tReq);
-      GetWeatherReply reply = GetWeatherReply.newBuilder().setCurrentTemp(tReply.getCurrentTemp())
+      String summary = "";
+      if (wReply.getCurrentWind() > 30) {
+        summary += "windy";
+      } else {
+        summary += "no-wind";
+      }
+      summary += " ";
+      if (tReply.getCurrentTemp() > 25) {
+        summary += "hot";
+      } else if (tReply.getCurrentTemp() < 12) {
+        summary += "cold";
+      } else {
+        summary += "normal";
+      }
+      
+      GetWeatherReply reply = GetWeatherReply.newBuilder()
+          .setSummary(summary)
+          .setCurrentTemp(tReply.getCurrentTemp())
           .setCurrentWindSpeed(wReply.getCurrentWind()).build();
+
       responseObserver.onNext(reply);
       responseObserver.onCompleted();
       channel.shutdown();
