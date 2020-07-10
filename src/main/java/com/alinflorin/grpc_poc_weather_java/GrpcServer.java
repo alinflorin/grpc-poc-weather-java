@@ -13,9 +13,7 @@ import io.grpc.stub.StreamObserver;
 import weather.*;
 import weather.WeatherOuterClass.GetWeatherReply;
 import weather.WeatherOuterClass.GetWeatherRequest;
-import darksky.Darksky.GetTempReply;
 import darksky.Darksky.GetWindRequest;
-import darksky.Darksky.GetWindReply;
 import darksky.Darksky.GetTempRequest;
 import darksky.*;
 import darksky.DarkSkyGrpc.DarkSkyBlockingStub;
@@ -61,11 +59,9 @@ public class GrpcServer {
           .setUseMetric(request.getUseMetric()).build();
       GetTempRequest tReq = GetTempRequest.newBuilder().setAddress(request.getAddress())
           .setUseMetric(request.getUseMetric()).build();
-      ManagedChannel channel = ManagedChannelBuilder.forTarget("grpc-poc-darksky-mock-node:3000")
-          // Channels are secure by default (via SSL/TLS). For the example we disable TLS
-          // to avoid
-          // needing certificates.
-          .usePlaintext().build();
+      ManagedChannel channel = ManagedChannelBuilder.forAddress("grpc-poc-darksky-mock-node", 3000)
+          .usePlaintext()
+          .build();
       try {
         DarkSkyBlockingStub stub = DarkSkyGrpc.newBlockingStub(channel);
         var wReply = stub.getWind(wReq);
