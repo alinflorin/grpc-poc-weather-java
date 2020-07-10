@@ -2,6 +2,7 @@ package com.alinflorin.grpc_poc_weather_java;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import io.grpc.ManagedChannel;
@@ -66,14 +67,17 @@ public class GrpcServer {
         DarkSkyBlockingStub stub = DarkSkyGrpc.newBlockingStub(channel);
         var wReply = stub.getWind(wReq);
         var tReply = stub.getTemp(tReq);
-        GetWeatherReply reply = GetWeatherReply.newBuilder().setCurrentTemp(tReply.getCurrentTemp()).setCurrentWindSpeed(wReply.getCurrentWind()).build();
+        GetWeatherReply reply = GetWeatherReply.newBuilder()
+          .setCurrentTemp(tReply.getCurrentTemp())
+          .setCurrentWindSpeed(wReply.getCurrentWind())
+          .build();
         responseObserver.onNext(reply);
         responseObserver.onCompleted();
       } finally {
         try {
           channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
         } catch (Exception e) {
-          // ignored
+          logger.log(Level.WARNING, e.getMessage());
         }
       }
     }
